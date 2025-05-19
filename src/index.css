@@ -1,0 +1,28 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brand-background text-brand-text font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+
+  .prose {
+    @apply text-brand-text; 
+  }
+  .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+    @apply text-brand-text; 
+  }
+  .prose a {
+    @apply text-brand-primary hover:text-brand-accent no-underline hover:underline;
+  }
+  .prose strong {
+    @apply text-brand-text;
+  }
+}
+
