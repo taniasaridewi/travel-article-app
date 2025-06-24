@@ -54,10 +54,26 @@ const CategoryModals: React.FC = () => {
     clearCategoryStoreError,
   ]);
 
-  const handleCreateSubmit = async (data: CreateCategoryPayload) => {
+  const handleCreateSubmit = async (data: CreateCategoryPayload | UpdateCategoryPayload) => {
     if (typeof clearCategoryStoreError === "function")
       clearCategoryStoreError();
-    const newCategory = await createCategory(data);
+
+    // Type guard to ensure we have the required fields for creation
+    if (!data.name) {
+      toast({
+        title: "Error",
+        description: "Name is required for category creation.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const createPayload: CreateCategoryPayload = {
+      name: data.name,
+      description: data.description,
+    };
+
+    const newCategory = await createCategory(createPayload);
     if (newCategory) {
       toast({
         title: "Sukses!",
@@ -74,11 +90,17 @@ const CategoryModals: React.FC = () => {
     }
   };
 
-  const handleEditSubmit = async (data: UpdateCategoryPayload) => {
+  const handleEditSubmit = async (data: CreateCategoryPayload | UpdateCategoryPayload) => {
     if (!categoryIdToEdit) return;
     if (typeof clearCategoryStoreError === "function")
       clearCategoryStoreError();
-    const updatedCategory = await updateCategory(categoryIdToEdit, data);
+
+    const updatePayload: UpdateCategoryPayload = {
+      name: data.name,
+      description: data.description,
+    };
+
+    const updatedCategory = await updateCategory(categoryIdToEdit, updatePayload);
     if (updatedCategory) {
       toast({
         title: "Sukses!",

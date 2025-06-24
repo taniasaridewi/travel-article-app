@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ArticleForm from "@/components/articles/ArticleForm";
 import { useArticleStore } from "@/store/articleStore";
-import type { CreateArticlePayload } from "@/services/articleService";
+import type { CreateArticlePayload, UpdateArticlePayload } from "@/services/articleService";
 import { ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -11,19 +11,21 @@ const CreateArticlePage: React.FC = () => {
   const navigate = useNavigate();
   const { createArticle, isSubmitting, error, clearError } = useArticleStore();
 
-  const handleSubmitArticle = async (data: CreateArticlePayload) => {
+  const handleSubmitArticle = async (data: CreateArticlePayload | UpdateArticlePayload) => {
     if (typeof clearError === "function") {
       clearError();
     } else {
       console.error("clearError is not a function in CreateArticlePage");
     }
 
-    const newArticle = await createArticle(data);
+    if ('title' in data && typeof data.title === 'string') {
+    const newArticle = await createArticle(data as CreateArticlePayload);
     if (newArticle) {
       alert("Artikel berhasil dibuat!");
       navigate(`/articles/${newArticle.documentId || newArticle.id}`);
     }
-  };
+  }
+};
 
   return (
     <div className="text-brand-text bg-brand-background min-h-screen py-8 antialiased">

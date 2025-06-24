@@ -9,7 +9,7 @@ import type {
 import { ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const EditCategoryPage: React.FC = () => {
   const { id: categoryDocumentId } = useParams<{ id: string }>();

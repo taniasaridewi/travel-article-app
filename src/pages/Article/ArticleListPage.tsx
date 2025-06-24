@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import LogoutButton from "@/components/auth/LogoutButton";
+// src\pages\Article\ArticleListPage.tsx
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import ArticleCard from "@/components/articles/ArticleCard";
 import { useAuthStore } from "@/store/authStore";
 import { useArticleStore } from "@/store/articleStore";
@@ -20,15 +20,13 @@ import {
   Search,
   XCircle,
   PlusCircle,
-  LayoutGrid,
   Compass,
   Filter,
-  Home,
 } from "lucide-react";
-import type { StrapiFilters, GetArticlesParams } from "@/types/articleTypes";
+import type { GetArticlesParams } from "@/types/articleTypes";
+import { useModalStore } from "@/store/modalStore";
 
 const ALL_CATEGORIES_SELECT_VALUE = "__ALL_CATEGORIES__";
-
 const ArticleListPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,16 +37,13 @@ const ArticleListPage: React.FC = () => {
     isLoading,
     error,
     fetchArticles,
-    setCurrentPage,
     currentFetchParams,
-    applyFiltersAndResetSort,
-    setSort,
     availableCategories,
     fetchAvailableCategories,
     isLoadingCategories,
     clearError,
   } = useArticleStore();
-
+  const { openModal } = useModalStore();
   const [titleFilter, setTitleFilter] = useState("");
   const [selectedCategoryName, setSelectedCategoryName] = useState("");
   const [activeSort, setActiveSort] = useState("createdAt:desc");
@@ -204,6 +199,19 @@ const ArticleListPage: React.FC = () => {
               </p>
             )}
           </div>
+          <Button
+                      onClick={() => {
+                        console.log('[ArtcileListPage] Tombol "Buat Article Baru" diklik.');
+                        openModal('createArticle');
+                        setTimeout(() => {
+                          console.log('[ArtcileListPage] Modal state after openModal("createArticle"):', useModalStore.getState().currentOpenModal);
+                        }, 0);
+                      }}
+                      className="w-full sm:w-auto bg-brand-primary hover:bg-opacity-80 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                    >
+                      <PlusCircle size={18} className="mr-2" />
+                      Buat Article Baru
+                    </Button>
         </div>
 
         <section className="bg-brand-surface border-brand-muted/20 mb-10 rounded-xl border p-5 shadow-xl sm:p-6">

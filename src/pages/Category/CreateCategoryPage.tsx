@@ -1,9 +1,10 @@
+// src\pages\Category\CreateCategoryPage.tsx
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CategoryForm from "@/components/categories/CategoryForm";
 import { useCategoryStore } from "@/store/categoryStore";
-import type { CreateCategoryPayload } from "@/types/categoryTypes";
-import { ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
+import type { CreateCategoryPayload, UpdateCategoryPayload } from "@/types/categoryTypes";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
@@ -12,19 +13,31 @@ const CreateCategoryPage: React.FC = () => {
   const { createCategory, isSubmitting, error, clearError } =
     useCategoryStore();
 
-  const handleSubmitCategory = async (data: CreateCategoryPayload) => {
-    if (typeof clearError === "function") {
-      clearError();
-    } else {
-      console.error("clearError is not a function in CreateCategoryPage");
-    }
+  const handleSubmitCategory = async (
+  data: CreateCategoryPayload | UpdateCategoryPayload
+) => {
+  if (!data.name) {
+    console.error("Field 'name' wajib diisi.");
+    return;
+  }
 
-    const newCategory = await createCategory(data);
-    if (newCategory) {
-      alert("Kategori berhasil dibuat!");
-      navigate("/categories");
-    }
+  if (typeof clearError === "function") {
+    clearError();
+  } else {
+    console.error("clearError is not a function in CreateCategoryPage");
+  }
+
+  const createPayload: CreateCategoryPayload = {
+    name: data.name,
+    description: data.description,
   };
+
+  const newCategory = await createCategory(createPayload);
+  if (newCategory) {
+    alert("Kategori berhasil dibuat!");
+    navigate("/categories");
+  }
+};
 
   return (
     <div className="text-brand-text bg-brand-background min-h-screen py-8 antialiased">

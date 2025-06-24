@@ -1,3 +1,4 @@
+// src\components\modals\ArticleModals.tsx
 import React, { useEffect } from "react";
 import { useModalStore } from "@/store/modalStore";
 import { useArticleStore } from "@/store/articleStore";
@@ -53,9 +54,27 @@ const ArticleModals: React.FC = () => {
     clearArticleStoreError,
   ]);
 
-  const handleCreateSubmit = async (data: CreateArticlePayload) => {
+  const handleCreateSubmit = async (data: CreateArticlePayload | UpdateArticlePayload) => {
     if (typeof clearArticleStoreError === "function") clearArticleStoreError();
-    const newArticle = await createArticle(data);
+    
+    // Type guard to ensure we have the required fields for creation
+    if (!data.title || !data.description || !data.category) {
+      toast({
+        title: "Error",
+        description: "Missing required fields for article creation.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const createPayload: CreateArticlePayload = {
+      title: data.title,
+      description: data.description,
+      category: data.category,
+      cover_image_url: data.cover_image_url,
+    };
+
+    const newArticle = await createArticle(createPayload);
     if (newArticle) {
       toast({
         title: "Sukses!",
@@ -72,10 +91,18 @@ const ArticleModals: React.FC = () => {
     }
   };
 
-  const handleEditSubmit = async (data: UpdateArticlePayload) => {
+  const handleEditSubmit = async (data: CreateArticlePayload | UpdateArticlePayload) => {
     if (!articleIdToEdit) return;
     if (typeof clearArticleStoreError === "function") clearArticleStoreError();
-    const updatedArticle = await updateArticle(articleIdToEdit, data);
+    
+    const updatePayload: UpdateArticlePayload = {
+      title: data.title,
+      description: data.description,
+      category: data.category,
+      cover_image_url: data.cover_image_url,
+    };
+
+    const updatedArticle = await updateArticle(articleIdToEdit, updatePayload);
     if (updatedArticle) {
       toast({
         title: "Sukses!",

@@ -1,7 +1,7 @@
 // src/App.tsx
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom'; 
-import { initializeAuth } from './store/authStore'; 
+import { initializeAuth } from '@/store/authStore'; 
 import AuthModals from '@/components/modals/AuthModals'; 
 import ArticleModals from '@/components/modals/ArticleModals'; 
 import CategoryModals from '@/components/modals/CategoryModals'; 

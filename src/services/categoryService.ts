@@ -1,3 +1,4 @@
+// src\services\categoryService.ts
 import apiClient from "./apiClient";
 import { CATEGORY_ENDPOINTS } from "@/constants/apiEndpoints";
 import type {
@@ -131,8 +132,9 @@ const categoryService = {
       const response = await apiClient.delete<CategoryMutationResponse | void>(
         `${CATEGORY_ENDPOINTS.CATEGORIES}/${documentId}`,
       );
-      if (response && (response as CategoryMutationResponse).data) {
-        return (response as CategoryMutationResponse).data.data;
+
+      if (response && response.data && (response.data as CategoryMutationResponse).data) {
+        return (response.data as CategoryMutationResponse).data;
       }
     } catch (error: any) {
       console.error(

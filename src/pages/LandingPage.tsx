@@ -1,23 +1,23 @@
 // src/pages/LandingPage.tsx
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowRight,
+  // ArrowRight,
   Linkedin,
   Mail,
-  Briefcase,
+  // Briefcase,
   BookOpen,
   Layers,
-  Users,
+  // Users,
   Code,
   CheckCircle,
-  Award,
-  GraduationCap,
-  ExternalLink,
-  Home,
+  // Award,
+  GraduationCap
+  // ExternalLink,
+  // Home,
 } from "lucide-react";
-import { useAuthStore } from "@/store/authStore";
+// import { useAuthStore } from "@/store/authStore";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
@@ -78,7 +78,7 @@ const portfolioData = {
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   return (
     <div className="bg-brand-background text-brand-text flex min-h-screen flex-col antialiased">

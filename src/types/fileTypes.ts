@@ -1,3 +1,5 @@
+// src/types/fileTypes.ts
+
 export interface ImageFormat {
   ext: string;
   url: string;
@@ -32,9 +34,9 @@ export interface UploadedFileResponse {
   hash: string;
   ext: string;
   mime: string;
-  size: number; 
-  sizeInBytes?: number; 
-  url: string; 
+  size: number;
+  sizeInBytes?: number;
+  url: string;
   previewUrl: string | null;
   provider: string;
   provider_metadata?: {
@@ -43,8 +45,8 @@ export interface UploadedFileResponse {
   };
   createdAt: string;
   updatedAt: string;
-  publishedAt?: string | null; 
-  locale?: string | null; 
+  publishedAt?: string | null;
+  locale?: string | null;
 }
 
 export type FileUploadApiResponse = UploadedFileResponse[];

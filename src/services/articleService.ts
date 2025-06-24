@@ -1,3 +1,4 @@
+// src\services\articleService.ts
 import apiClient from "./apiClient";
 import { ARTICLE_ENDPOINTS } from "@/constants/apiEndpoints";
 import type {
@@ -5,22 +6,48 @@ import type {
   GetArticlesParams,
   Article,
 } from "@/types/articleTypes";
+
+// Error types
+interface ApiErrorDetail {
+  message: string;
+}
+
+interface ApiError {
+  message?: string;
+  details?: {
+    errors?: ApiErrorDetail[];
+  };
+}
+
+interface ErrorResponse {
+  response?: {
+    data?: {
+      error?: ApiError;
+      message?: string;
+    };
+  };
+  message?: string;
+}
+
 export interface CreateArticlePayload {
   title: string;
   description: string;
   category: number;
   cover_image_url?: string;
 }
+
 export interface UpdateArticlePayload {
   title?: string;
   description?: string;
   category?: number;
   cover_image_url?: string;
 }
+
 interface SingleArticleApiResponse {
   data: Article;
   meta: object;
 }
+
 interface ArticleMutationResponse {
   data: Article;
   meta?: object;
@@ -38,13 +65,14 @@ const articleService = {
         { params: queryParams },
       );
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as ErrorResponse;
       console.error(
         "articleService.getArticles error:",
-        error.response?.data || error.message || error,
+        err.response?.data || err.message || error,
       );
-      if (error.response?.data?.error) throw error.response.data.error;
-      throw new Error(error.message || "Gagal mengambil daftar artikel.");
+      if (err.response?.data?.error) throw err.response.data.error;
+      throw new Error(err.message || "Gagal mengambil daftar artikel.");
     }
   },
 
@@ -63,14 +91,15 @@ const articleService = {
       } else {
         throw new Error("Format data artikel tunggal tidak valid dari server.");
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as ErrorResponse;
       console.error(
         `articleService.getArticleById (documentId: ${documentId}) error:`,
-        error.response?.data || error.message || error,
+        err.response?.data || err.message || error,
       );
-      if (error.response?.data?.error) throw error.response.data.error;
+      if (err.response?.data?.error) throw err.response.data.error;
       throw new Error(
-        error.message || `Gagal mengambil artikel dengan ID ${documentId}.`,
+        err.message || `Gagal mengambil artikel dengan ID ${documentId}.`,
       );
     }
   },
@@ -79,7 +108,7 @@ const articleService = {
     try {
       const apiPayload = { data: payload };
       const response = await apiClient.post<ArticleMutationResponse>(
-        `${ARTICLE_ENDPOINTS.ARTICLES}?populate=user,category`,
+        `${ARTICLE_ENDPOINTS.ARTICLES}`,
         apiPayload,
       );
       if (response.data && response.data.data) {
@@ -89,22 +118,25 @@ const articleService = {
           "Format data artikel yang dibuat tidak valid dari server.",
         );
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as ErrorResponse;
       console.error(
         "articleService.createArticle error:",
-        error.response?.data || error.message || error,
+        err.response?.data || err.message || error,
       );
-      if (error.response?.data?.error) {
-        const apiError = error.response.data.error;
+      if (err.response?.data?.error) {
+        const apiError = err.response.data.error;
         let errorMessage = apiError.message || "Gagal membuat artikel.";
-        if (apiError.details?.errors)
+        if (apiError.details?.errors) {
           errorMessage +=
             ": " +
-            apiError.details.errors.map((e: any) => e.message).join(", ");
+            apiError.details.errors.map((e) => e.message).join(", ");
+        }
         throw new Error(errorMessage);
-      } else if (error.response?.data?.message)
-        throw new Error(error.response.data.message);
-      throw new Error(error.message || "Gagal membuat artikel.");
+      } else if (err.response?.data?.message) {
+        throw new Error(err.response.data.message);
+      }
+      throw new Error(err.message || "Gagal membuat artikel.");
     }
   },
 
@@ -114,9 +146,9 @@ const articleService = {
   ): Promise<Article> => {
     try {
       const apiPayload = { data: payload };
-      const populateParams = "populate[user]=*&populate[category]=*";
+      // const populateParams = "populate[user]=*&populate[category]=*";
       const response = await apiClient.put<ArticleMutationResponse>(
-        `${ARTICLE_ENDPOINTS.ARTICLES}/${documentId}?${populateParams}`,
+        `${ARTICLE_ENDPOINTS.ARTICLES}/${documentId}`,
         apiPayload,
       );
       if (response.data && response.data.data) {
@@ -126,23 +158,26 @@ const articleService = {
           "Format data artikel yang diupdate tidak valid dari server.",
         );
       }
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as ErrorResponse;
       console.error(
         `articleService.updateArticle (documentId: ${documentId}) error:`,
-        error.response?.data || error.message || error,
+        err.response?.data || err.message || error,
       );
-      if (error.response?.data?.error) {
-        const apiError = error.response.data.error;
+      if (err.response?.data?.error) {
+        const apiError = err.response.data.error;
         let errorMessage = apiError.message || "Gagal mengupdate artikel.";
-        if (apiError.details?.errors)
+        if (apiError.details?.errors) {
           errorMessage +=
             ": " +
-            apiError.details.errors.map((e: any) => e.message).join(", ");
+            apiError.details.errors.map((e) => e.message).join(", ");
+        }
         throw new Error(errorMessage);
-      } else if (error.response?.data?.message)
-        throw new Error(error.response.data.message);
+      } else if (err.response?.data?.message) {
+        throw new Error(err.response.data.message);
+      }
       throw new Error(
-        error.message || `Gagal mengupdate artikel dengan ID ${documentId}.`,
+        err.message || `Gagal mengupdate artikel dengan ID ${documentId}.`,
       );
     }
   },
@@ -153,23 +188,26 @@ const articleService = {
         `${ARTICLE_ENDPOINTS.ARTICLES}/${documentId}`,
       );
       if (response.data && response.data.data) return response.data.data;
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as ErrorResponse;
       console.error(
         `articleService.deleteArticle (documentId: ${documentId}) error:`,
-        error.response?.data || error.message || error,
+        err.response?.data || err.message || error,
       );
-      if (error.response?.data?.error) {
-        const apiError = error.response.data.error;
+      if (err.response?.data?.error) {
+        const apiError = err.response.data.error;
         let errorMessage = apiError.message || "Gagal menghapus artikel.";
-        if (apiError.details?.errors)
+        if (apiError.details?.errors) {
           errorMessage +=
             ": " +
-            apiError.details.errors.map((e: any) => e.message).join(", ");
+            apiError.details.errors.map((e) => e.message).join(", ");
+        }
         throw new Error(errorMessage);
-      } else if (error.response?.data?.message)
-        throw new Error(error.response.data.message);
+      } else if (err.response?.data?.message) {
+        throw new Error(err.response.data.message);
+      }
       throw new Error(
-        error.message || `Gagal menghapus artikel dengan ID ${documentId}.`,
+        err.message || `Gagal menghapus artikel dengan ID ${documentId}.`,
       );
     }
   },

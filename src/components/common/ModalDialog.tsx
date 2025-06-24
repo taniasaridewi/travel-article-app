@@ -1,3 +1,4 @@
+// src\components\common\ModalDialog.tsx
 import React from "react";
 import {
   Dialog,
@@ -6,8 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
 
 interface ModalDialogProps {

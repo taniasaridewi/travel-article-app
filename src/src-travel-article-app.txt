@@ -1,0 +1,90 @@
+.
+├── App.css
+├── App.tsx
+├── assets
+│   └── react.svg
+├── components
+│   ├── articles
+│   │   ├── ArticleCard.tsx
+│   │   └── ArticleForm.tsx
+│   ├── auth
+│   │   ├── LoginForm.tsx
+│   │   ├── LogoutButton.tsx
+│   │   └── RegisterForm.tsx
+│   ├── categories
+│   │   ├── CategoryCard.tsx
+│   │   └── CategoryForm.tsx
+│   ├── common
+│   │   ├── LoadingSpinner.tsx
+│   │   └── ModalDialog.tsx
+│   ├── layout
+│   │   ├── Footer.tsx
+│   │   └── Header.tsx
+│   ├── modals
+│   │   ├── ArticleModals.tsx
+│   │   ├── AuthModals.tsx
+│   │   └── CategoryModals.tsx
+│   └── ui
+│       ├── alert.tsx
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── dialog.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── select.tsx
+│       ├── sonner.tsx
+│       ├── textarea.tsx
+│       ├── toast.tsx
+│       └── toaster.tsx
+├── constants
+│   └── apiEndpoints.ts
+├── hooks
+│   ├── use-toast.ts
+│   └── useAuth.ts
+├── index.css
+├── layouts
+│   ├── AuthLayout.tsx
+│   └── MainLayout.tsx
+├── lib
+│   └── utils.ts
+├── main.tsx
+├── pages
+│   ├── Article
+│   │   ├── ArticleDetailPage.tsx
+│   │   ├── ArticleListPage.tsx
+│   │   ├── CreateArticlePage.tsx
+│   │   ├── EditArticlePage.tsx
+│   │   └── LandingPage.tsx
+│   ├── Auth
+│   │   ├── LoginPage.tsx
+│   │   └── RegisterPage.tsx
+│   ├── Category
+│   │   ├── CategoryListPage.tsx
+│   │   ├── CreateCategoryPage.tsx
+│   │   └── EditCategoryPage.tsx
+│   └── LandingPage.tsx
+├── router
+│   ├── ProtectedLayout.tsx
+│   ├── ProtectedRoute.tsx
+│   └── index.tsx
+├── services
+│   ├── apiClient.ts
+│   ├── articleService.ts
+│   ├── authService.ts
+│   ├── categoryService.ts
+│   ├── commentService.ts
+│   └── fileService.ts
+├── src-travel-article-app
+├── store
+│   ├── articleStore.ts
+│   ├── authStore.ts
+│   ├── categoryStore.ts
+│   └── modalStore.ts
+├── types
+│   ├── articleTypes.ts
+│   ├── categoryTypes.ts
+│   ├── commentTypes.ts
+│   └── fileTypes.ts
+└── vite-env.d.ts
+
+22 directories, 66 files

@@ -6,7 +6,7 @@ import RegisterForm from "@/components/auth/RegisterForm";
 import { useToast } from "@/hooks/use-toast";
 
 const AuthModals: React.FC = () => {
-  const { currentOpenModal, modalData, closeModal, openModal } =
+  const { currentOpenModal, closeModal, openModal } =
     useModalStore();
   const { toast } = useToast();
 

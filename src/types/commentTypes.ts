@@ -1,5 +1,7 @@
-import type { UserData as AuthorData } from "@/services/authService";
-import type { PaginationMeta } from "./articleTypes";
+// src/types/commentTypes.ts
+
+import type { AuthorData } from './userTypes';
+import type { PaginationMeta } from './commonTypes';
 
 export interface CommentData {
   id: number;
@@ -10,7 +12,7 @@ export interface CommentData {
   publishedAt: string | null;
   locale: string | null;
   user?: AuthorData;
-  article?: { id: number };
+  article?: { id: number }; // ✅ untuk relasi article
 }
 
 export interface CreateCommentPayload {

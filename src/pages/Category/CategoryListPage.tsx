@@ -1,15 +1,15 @@
 import React, { useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { useCategoryStore } from '@/store/categoryStore';
 import { useAuthStore } from '@/store/authStore';
 import { useModalStore } from '@/store/modalStore';
 import CategoryCard from '@/components/categories/CategoryCard';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, PlusCircle, ListChecks, Compass } from 'lucide-react';
+import { Loader2, AlertTriangle, PlusCircle, Compass } from 'lucide-react';
 import type { CategoryData } from '@/types/categoryTypes';
 
 const CategoryListPage: React.FC = () => {
-  const navigate = useNavigate(); 
+  // const navigate = useNavigate(); 
   const authUser = useAuthStore((state) => state.user);
   const { openModal } = useModalStore();
   const {

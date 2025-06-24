@@ -2,12 +2,13 @@ import { create } from 'zustand';
 import categoryService from '@/services/categoryService'; 
 import type {
   CategoryData,
-  PaginationMeta,
   CreateCategoryPayload,
   UpdateCategoryPayload,
   CategoriesApiResponse,
 } from '@/types/categoryTypes'; 
-
+import type {
+  PaginationMeta
+} from '@/types/commonTypes';
 interface CategoryState {
   categories: CategoryData[];
   pagination: PaginationMeta | null;

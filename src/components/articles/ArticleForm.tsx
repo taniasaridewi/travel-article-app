@@ -9,22 +9,30 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { CreateArticlePayload, UpdateArticlePayload } from '@/services/articleService'; 
 import fileService from '@/services/fileService'; 
-import type { UploadedFileResponse } from '@/types/fileTypes'; 
+// import type { UploadedFileResponse } from '@/types/fileTypes'; 
 import { useArticleStore } from '@/store/articleStore';
 import { Loader2, UploadCloud, Image as ImageIcon, XCircle } from 'lucide-react';
 
+// Schema for form validation (keep category as string for form handling)
 const articleSchema = z.object({
   title: z.string().min(3, { message: "Judul minimal 3 karakter." }).max(200, { message: "Judul maksimal 200 karakter." }),
   description: z.string().min(10, { message: "Deskripsi minimal 10 karakter." }),
-  category: z.string().refine(val => val !== '' && !isNaN(parseInt(val)), { message: "Kategori harus dipilih."}).transform(Number),
+  category: z.string().refine(val => val !== '' && !isNaN(parseInt(val)), { message: "Kategori harus dipilih."}),
 });
 
 type ArticleFormInputs = z.infer<typeof articleSchema>;
 
+interface ArticleInitialData {
+  title?: string;
+  description?: string;
+  category?: string | number;
+  cover_image_url?: string;
+}
+
 interface ArticleFormProps {
   onSubmit: (data: CreateArticlePayload | UpdateArticlePayload) => Promise<void>;
   isSubmitting: boolean; 
-  initialData?: Partial<ArticleFormInputs & { category: number | string, cover_image_url?: string }>;
+  initialData?: ArticleInitialData;
   submitButtonText?: string;
 }
 
@@ -130,9 +138,10 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         } else {
           throw new Error("Respons upload gambar tidak valid.");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Gagal mengupload gambar sampul:", err);
-        setUploadError(err.message || "Gagal mengupload gambar.");
+        const errorMessage = err instanceof Error ? err.message : "Gagal mengupload gambar.";
+        setUploadError(errorMessage);
         setIsUploadingImage(false);
         return; 
       }
@@ -141,10 +150,11 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
       finalCoverImageUrl = ""; 
     }
 
+    // Convert category string to number for the payload
     const payload: CreateArticlePayload | UpdateArticlePayload = {
       title: formData.title,
       description: formData.description,
-      category: formData.category, 
+      category: parseInt(formData.category), // Convert string to number here
       cover_image_url: finalCoverImageUrl || undefined,
     };
     await onSubmit(payload);
@@ -154,13 +164,24 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
     <form onSubmit={handleSubmit(processSubmit)} className="space-y-7 text-brand-text">
       <div>
         <Label htmlFor="title" className="block text-sm font-medium mb-1.5 text-brand-text">Judul Artikel</Label>
-        <Input id="title" {...register('title')} className={`mt-1 block w-full rounded-lg border-brand-muted/50 shadow-sm focus:border-brand-primary focus:ring-1 focus:ring-brand-primary sm:text-sm py-2.5 px-3 ${errors.title ? 'border-red-500' : ''}`} placeholder="Contoh: Petualangan Seru di Gunung Bromo" />
+        <Input 
+          id="title" 
+          {...register('title')} 
+          className={`mt-1 block w-full rounded-lg border-brand-muted/50 shadow-sm focus:border-brand-primary focus:ring-1 focus:ring-brand-primary sm:text-sm py-2.5 px-3 ${errors.title ? 'border-red-500' : ''}`} 
+          placeholder="Contoh: Petualangan Seru di Gunung Bromo" 
+        />
         {errors.title && <p className="mt-1.5 text-xs text-red-600">{errors.title.message}</p>}
       </div>
 
       <div>
         <Label htmlFor="description" className="block text-sm font-medium mb-1.5 text-brand-text">Deskripsi</Label>
-        <Textarea id="description" {...register('description')} rows={10} className={`mt-1 block w-full rounded-lg border-brand-muted/50 shadow-sm focus:border-brand-primary focus:ring-1 focus:ring-brand-primary sm:text-sm py-2.5 px-3 ${errors.description ? 'border-red-500' : ''}`} placeholder="Ceritakan pengalaman travel Anda secara detail..." />
+        <Textarea 
+          id="description" 
+          {...register('description')} 
+          rows={10} 
+          className={`mt-1 block w-full rounded-lg border-brand-muted/50 shadow-sm focus:border-brand-primary focus:ring-1 focus:ring-brand-primary sm:text-sm py-2.5 px-3 ${errors.description ? 'border-red-500' : ''}`} 
+          placeholder="Ceritakan pengalaman travel Anda secara detail..." 
+        />
         {errors.description && <p className="mt-1.5 text-xs text-red-600">{errors.description.message}</p>}
       </div>
 
@@ -169,9 +190,8 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
         <Controller
           name="category"
           control={control}
-          defaultValue={initialData?.category ? String(initialData.category) : ""}
           render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value || ""} disabled={isLoadingCategories}>
+            <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingCategories}>
               <SelectTrigger className={`w-full mt-1 rounded-lg border-brand-muted/50 shadow-sm focus:border-brand-primary focus:ring-1 focus:ring-brand-primary sm:text-sm py-2.5 px-3 ${errors.category ? 'border-red-500' : ''}`}>
                 <SelectValue placeholder={isLoadingCategories ? "Memuat kategori..." : "Pilih kategori artikel"} />
               </SelectTrigger>

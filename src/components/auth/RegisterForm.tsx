@@ -1,3 +1,4 @@
+//src\components\auth\RegisterForm.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +10,17 @@ import { useAuthStore } from "@/store/authStore";
 import authService from "@/services/authService";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Eye, EyeOff, Loader2, AlertTriangle } from "lucide-react";
+
+// Define error type for better type safety
+interface ValidationError {
+  name: string;
+  message: string;
+  details?: {
+    errors: Array<{
+      message: string;
+    }>;
+  };
+}
 
 const registerSchema = z
   .object({
@@ -182,7 +194,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
     else console.warn("clearError is not a function");
 
     try {
-      const { password_confirmation, ...apiData } = data;
+      // Destructure to omit password_confirmation from API data
+      const { password_confirmation: _, ...apiData } = data;
       const response = await authService.register(apiData);
       console.log("Registrasi berhasil (processed response object):", response);
 
@@ -196,24 +209,33 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
           "Respons API tidak sesuai format yang diharapkan setelah registrasi.";
         throw new Error(errorMessage);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registrasi gagal (caught error):", err);
       let displayErrorMessage = "Terjadi kesalahan saat registrasi.";
-      if (err && err.message) {
+      
+      if (err instanceof Error) {
         displayErrorMessage = err.message;
-        if (
-          err.name === "ValidationError" &&
-          err.details &&
-          err.details.errors
-        ) {
-          const fieldErrors = err.details.errors
-            .map((e: any) => e.message)
-            .join(" ");
-          displayErrorMessage = `${err.message}: ${fieldErrors}`;
-        } else if (err.name && err.message) {
-          displayErrorMessage = `${err.message}`;
+      } else if (err && typeof err === 'object') {
+        const error = err as ValidationError;
+        
+        if (error.message) {
+          displayErrorMessage = error.message;
+          
+          if (
+            error.name === "ValidationError" &&
+            error.details &&
+            error.details.errors
+          ) {
+            const fieldErrors = error.details.errors
+              .map((e) => e.message)
+              .join(" ");
+            displayErrorMessage = `${error.message}: ${fieldErrors}`;
+          } else if (error.name && error.message) {
+            displayErrorMessage = `${error.message}`;
+          }
         }
       }
+      
       if (typeof setError === "function") setError(displayErrorMessage);
       else console.warn("setError is not a function");
     } finally {
@@ -384,5 +406,4 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
     </form>
   );
 };
-
 export default RegisterForm;

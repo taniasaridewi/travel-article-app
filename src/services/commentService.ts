@@ -1,3 +1,4 @@
+// src\services\commentService.ts
 import apiClient from "./apiClient";
 import { COMMENT_ENDPOINTS } from "@/constants/apiEndpoints";
 import type {
@@ -5,7 +6,7 @@ import type {
   CreateCommentPayload,
   UpdateCommentPayload,
   SingleCommentApiResponse,
-} from "@/types/articleTypes";
+} from "@/types/commentTypes";
 
 const commentService = {
   createComment: async (
@@ -97,8 +98,9 @@ const commentService = {
       const response = await apiClient.delete<SingleCommentApiResponse | void>(
         `${COMMENT_ENDPOINTS.COMMENTS}/${documentId}`,
       );
-      if (response && (response as SingleCommentApiResponse).data) {
-        return (response as SingleCommentApiResponse).data.data; 
+
+      if (response?.data && (response.data as SingleCommentApiResponse).data) {
+        return (response.data as SingleCommentApiResponse).data;
       }
     } catch (error: any) {
       console.error(

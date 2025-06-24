@@ -3,11 +3,11 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import ArticleForm from "@/components/articles/ArticleForm";
 import { useArticleStore } from "@/store/articleStore";
 import type { UpdateArticlePayload } from "@/services/articleService";
-import type { Article } from "@/types/articleTypes";
+// import type { Article } from "@/types/articleTypes";
 import { ArrowLeft, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const EditArticlePage: React.FC = () => {
   const { id: articleId } = useParams<{ id: string }>();

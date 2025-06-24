@@ -1,33 +1,35 @@
+// src\store\articleStore.ts
 import { create } from 'zustand';
 import articleService, { type CreateArticlePayload, type UpdateArticlePayload } from '@/services/articleService';
-import categoryService from '@/services/categoryService'; 
-import commentService from '@/services/commentService'; 
+import categoryService from '@/services/categoryService';
+import commentService from '@/services/commentService';
 import type {
   Article,
-  PaginationMeta,
   GetArticlesParams,
   ArticlesApiResponse,
   StrapiFilters,
-  CategoryData
-} from '@/types/articleTypes'; 
+} from '@/types/articleTypes';
 import type {
   CommentData,
-  CreateCommentPayload as CreateCommentApiPayload, 
+  CreateCommentPayload as CreateCommentApiPayload,
   UpdateCommentPayload as UpdateCommentApiPayload
-} from '@/types/commentTypes'; 
+} from '@/types/commentTypes';
+import type { PaginationMeta } from '@/types/commonTypes';
+import type { CategoryData } from '@/types/categoryTypes';
+
 
 interface ArticleState {
   articles: Article[];
   pagination: PaginationMeta | null;
   currentArticle: Article | null;
-  isLoading: boolean; 
+  isLoading: boolean;
   isSubmitting: boolean;
   isSubmittingComment: boolean;
-  error: string | null; 
-  commentError: string | null; 
+  error: string | null;
+  commentError: string | null;
   currentFetchParams: GetArticlesParams;
   availableCategories: CategoryData[];
-  isLoadingCategories: boolean; 
+  isLoadingCategories: boolean;
 
   fetchArticles: (params?: GetArticlesParams) => Promise<void>;
   fetchArticleById: (documentId: string, populateParams?: { populate?: GetArticlesParams['populate'] }) => Promise<Article | null>;
@@ -46,16 +48,16 @@ interface ArticleState {
   applyFiltersAndResetSort: (filters: StrapiFilters) => void;
   setSort: (sort: string | string[]) => void;
   clearCurrentArticle: () => void;
-  clearError: () => void; 
-  clearCommentError: () => void; 
+  clearError: () => void;
+  clearCommentError: () => void;
 }
 
 const initialArticleParams: GetArticlesParams = {
   pagination: { page: 1, pageSize: 9 },
-  populate: { 
+  populate: {
     user: '*',
     category: '*',
-    comments: { populate: { user: '*' } } 
+    comments: { populate: { user: '*' } }
   },
   filters: {},
   sort: 'createdAt:desc',
@@ -84,57 +86,56 @@ export const useArticleStore = create<ArticleState>()((set, get) => ({
         ...(currentParams.pagination || initialArticleParams.pagination),
         ...(params?.pagination || {}),
       },
-      filters: params?.filters !== undefined
-        ? params.filters
-        : (currentParams.filters || initialArticleParams.filters),
-      sort: params?.sort !== undefined
-        ? params.sort
-        : (currentParams.sort || initialArticleParams.sort),
-      populate: params?.populate || currentParams.populate || initialArticleParams.populate,
+      filters: params?.filters ?? (currentParams.filters || initialArticleParams.filters),
+      sort: params?.sort ?? (currentParams.sort || initialArticleParams.sort),
+      populate: params?.populate ?? currentParams.populate ?? initialArticleParams.populate,
     };
     newParams.pagination = {
-        page: newParams.pagination?.page || initialArticleParams.pagination!.page,
-        pageSize: newParams.pagination?.pageSize || initialArticleParams.pagination!.pageSize,
+      page: newParams.pagination?.page || initialArticleParams.pagination!.page,
+      pageSize: newParams.pagination?.pageSize || initialArticleParams.pagination!.pageSize,
     };
     set({ currentFetchParams: newParams });
     try {
       const response: ArticlesApiResponse = await articleService.getArticles(newParams);
       set({ articles: response.data, pagination: response.meta.pagination, isLoading: false });
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Gagal memuat artikel.";
       console.error("articleStore.fetchArticles error:", err);
-      set({ error: err.message || "Gagal memuat artikel.", isLoading: false });
+      set({ error: errorMessage, isLoading: false });
     }
   },
 
-  fetchArticleById: async (documentId: string, populateParams?: { populate?: GetArticlesParams['populate'] }) => {
+  fetchArticleById: async (documentId, populateParams) => {
     set({ isLoading: true, error: null, commentError: null, currentArticle: null });
     try {
       const populateConfig = populateParams?.populate || initialArticleParams.populate;
       const articleData = await articleService.getArticleById(documentId, { populate: populateConfig });
       set({ currentArticle: articleData, isLoading: false });
       return articleData;
-    } catch (err: any) {
-      console.error(`articleStore.fetchArticleById (documentId: ${documentId}) error:`, err);
-      set({ error: err.message || `Gagal memuat detail artikel.`, isLoading: false });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Gagal memuat detail artikel.";
+      console.error(`articleStore.fetchArticleById error:`, err);
+      set({ error: errorMessage, isLoading: false });
       return null;
     }
   },
 
-  createArticle: async (articleData: CreateArticlePayload): Promise<Article | null> => {
+  createArticle: async (articleData) => {
     set({ isSubmitting: true, error: null });
     try {
       const newArticle = await articleService.createArticle(articleData);
       set({ isSubmitting: false });
-      get().fetchArticles({ pagination: { page: 1 } }); 
+      await get().fetchArticles({ pagination: { page: 1 } });
       return newArticle;
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Gagal membuat artikel.";
       console.error("articleStore.createArticle error:", err);
-      set({ error: err.message || "Gagal membuat artikel.", isSubmitting: false });
+      set({ error: errorMessage, isSubmitting: false });
       return null;
     }
   },
 
-  updateArticle: async (documentId: string, articleData: UpdateArticlePayload): Promise<Article | null> => {
+  updateArticle: async (documentId, articleData) => {
     set({ isSubmitting: true, error: null });
     try {
       const updatedArticle = await articleService.updateArticle(documentId, articleData);
@@ -146,14 +147,15 @@ export const useArticleStore = create<ArticleState>()((set, get) => ({
         currentArticle: state.currentArticle?.documentId === documentId ? updatedArticle : state.currentArticle,
       }));
       return updatedArticle;
-    } catch (err: any) {
-      console.error(`articleStore.updateArticle (documentId: ${documentId}) error:`, err);
-      set({ error: err.message || "Gagal mengupdate artikel.", isSubmitting: false });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Gagal mengupdate artikel.";
+      console.error(`articleStore.updateArticle error:`, err);
+      set({ error: errorMessage, isSubmitting: false });
       return null;
     }
   },
 
-  deleteArticle: async (documentId: string): Promise<boolean> => {
+  deleteArticle: async (documentId) => {
     set({ isSubmitting: true, error: null });
     try {
       await articleService.deleteArticle(documentId);
@@ -163,27 +165,29 @@ export const useArticleStore = create<ArticleState>()((set, get) => ({
         currentArticle: state.currentArticle?.documentId === documentId ? null : state.currentArticle,
       }));
       return true;
-    } catch (err: any) {
-      console.error(`articleStore.deleteArticle (documentId: ${documentId}) error:`, err);
-      set({ error: err.message || "Gagal menghapus artikel.", isSubmitting: false });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Gagal menghapus artikel.";
+      console.error(`articleStore.deleteArticle error:`, err);
+      set({ error: errorMessage, isSubmitting: false });
       return false;
     }
   },
 
-  fetchAvailableCategories: async (params?: { pagination?: { page?: number, pageSize?: number } }) => {
-    if (get().isLoadingCategories) return; 
-    set({ isLoadingCategories: true, error: null }); 
+  fetchAvailableCategories: async (params) => {
+    if (get().isLoadingCategories) return;
+    set({ isLoadingCategories: true, error: null });
     try {
       const categoryResponse = await categoryService.getCategories(params || { pagination: { pageSize: 200 } });
       const sortedCategories = categoryResponse.data.sort((a, b) => a.name.localeCompare(b.name));
       set({ availableCategories: sortedCategories, isLoadingCategories: false });
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Gagal memuat daftar kategori.";
       console.error("articleStore.fetchAvailableCategories error:", err);
-      set({ error: err.message || "Gagal memuat daftar kategori.", isLoadingCategories: false });
+      set({ error: errorMessage, isLoadingCategories: false });
     }
   },
 
-  addComment: async (payload: CreateCommentApiPayload): Promise<CommentData | null> => {
+  addComment: async (payload) => {
     set({ isSubmittingComment: true, commentError: null });
     try {
       const newComment = await commentService.createComment(payload);
@@ -195,17 +199,18 @@ export const useArticleStore = create<ArticleState>()((set, get) => ({
             isSubmittingComment: false,
           };
         }
-        return { isSubmittingComment: false }; 
+        return { isSubmittingComment: false };
       });
       return newComment;
-    } catch (err: any) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Gagal menambah komentar.";
       console.error("articleStore.addComment error:", err);
-      set({ commentError: err.message || "Gagal menambah komentar.", isSubmittingComment: false });
+      set({ commentError: errorMessage, isSubmittingComment: false });
       return null;
     }
   },
 
-  editComment: async (commentDocumentId: string, payload: UpdateCommentApiPayload): Promise<CommentData | null> => {
+  editComment: async (commentDocumentId, payload) => {
     set({ isSubmittingComment: true, commentError: null });
     try {
       const updatedComment = await commentService.updateComment(commentDocumentId, payload);
@@ -222,14 +227,15 @@ export const useArticleStore = create<ArticleState>()((set, get) => ({
         return { isSubmittingComment: false };
       });
       return updatedComment;
-    } catch (err: any) {
-      console.error(`articleStore.editComment (commentDocId: ${commentDocumentId}) error:`, err);
-      set({ commentError: err.message || "Gagal mengupdate komentar.", isSubmittingComment: false });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Gagal mengupdate komentar.";
+      console.error(`articleStore.editComment error:`, err);
+      set({ commentError: errorMessage, isSubmittingComment: false });
       return null;
     }
   },
 
-  removeComment: async (commentDocumentId: string): Promise<boolean> => {
+  removeComment: async (commentDocumentId) => {
     set({ isSubmittingComment: true, commentError: null });
     try {
       await commentService.deleteComment(commentDocumentId);
@@ -246,27 +252,28 @@ export const useArticleStore = create<ArticleState>()((set, get) => ({
         return { isSubmittingComment: false };
       });
       return true;
-    } catch (err: any) {
-      console.error(`articleStore.removeComment (commentDocId: ${commentDocumentId}) error:`, err);
-      set({ commentError: err.message || "Gagal menghapus komentar.", isSubmittingComment: false });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Gagal menghapus komentar.";
+      console.error(`articleStore.removeComment error:`, err);
+      set({ commentError: errorMessage, isSubmittingComment: false });
       return false;
     }
   },
 
-  setCurrentPage: (page: number) => { get().fetchArticles({ pagination: { page } }); },
-  setPageSize: (pageSize: number) => { get().fetchArticles({ pagination: { page: 1, pageSize } }); },
-  applyFiltersAndResetSort: (newFilters: StrapiFilters) => {
+  setCurrentPage: (page) => { get().fetchArticles({ pagination: { page } }); },
+  setPageSize: (pageSize) => { get().fetchArticles({ pagination: { page: 1, pageSize } }); },
+  applyFiltersAndResetSort: (newFilters) => {
     const isResettingAll = Object.keys(newFilters).length === 0;
     get().fetchArticles({
       filters: newFilters,
       pagination: { page: 1 },
-      sort: isResettingAll ? initialArticleParams.sort : undefined, 
+      sort: isResettingAll ? initialArticleParams.sort : undefined,
     });
   },
-  setSort: (sortOption: string | string[]) => {
+  setSort: (sortOption) => {
     get().fetchArticles({
       sort: sortOption,
-      pagination: { page: 1 }, 
+      pagination: { page: 1 },
     });
   },
   clearCurrentArticle: () => set({ currentArticle: null, error: null, commentError: null }),

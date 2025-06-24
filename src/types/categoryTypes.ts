@@ -1,4 +1,6 @@
-import type { PaginationMeta } from './articleTypes'; 
+// src/types/categoryTypes.ts
+
+import type { ApiResponseMeta } from './commonTypes';
 
 export interface CategoryData {
   id: number;
@@ -13,19 +15,17 @@ export interface CategoryData {
 
 export interface CategoriesApiResponse {
   data: CategoryData[];
-  meta: {
-    pagination: PaginationMeta;
-  };
+  meta: ApiResponseMeta;
 }
 
 export interface SingleCategoryApiResponse {
   data: CategoryData;
-  meta: object; 
+  meta: object;
 }
 
 export interface CreateCategoryPayload {
   name: string;
-  description?: string | null; 
+  description?: string | null;
 }
 
 export interface UpdateCategoryPayload {

@@ -11,6 +11,17 @@ import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Eye, EyeOff, Loader2, AlertTriangle } from "lucide-react";
 
+// Define error type for better type safety
+interface ValidationError {
+  name: string;
+  message: string;
+  details?: {
+    errors: Array<{
+      message: string;
+    }>;
+  };
+}
+
 const loginSchema = z.object({
   email: z
     .string()
@@ -140,24 +151,33 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
           "Data pengguna atau token tidak valid setelah login.";
         throw new Error(errorMessage);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login failed (caught error):", err);
       let displayErrorMessage = "Terjadi kesalahan saat login.";
-      if (err && err.message) {
+      
+      if (err instanceof Error) {
         displayErrorMessage = err.message;
-        if (
-          err.name === "ValidationError" &&
-          err.details &&
-          err.details.errors
-        ) {
-          const fieldErrors = err.details.errors
-            .map((e: any) => e.message)
-            .join(" ");
-          displayErrorMessage = `${err.message}: ${fieldErrors}`;
-        } else if (err.name && err.message) {
-          displayErrorMessage = `${err.message}`;
+      } else if (err && typeof err === 'object') {
+        const error = err as ValidationError;
+        
+        if (error.message) {
+          displayErrorMessage = error.message;
+          
+          if (
+            error.name === "ValidationError" &&
+            error.details &&
+            error.details.errors
+          ) {
+            const fieldErrors = error.details.errors
+              .map((e) => e.message)
+              .join(" ");
+            displayErrorMessage = `${error.message}: ${fieldErrors}`;
+          } else if (error.name && error.message) {
+            displayErrorMessage = `${error.message}`;
+          }
         }
       }
+      
       if (typeof setError === "function") setError(displayErrorMessage);
       else console.warn("setError is not a function");
     } finally {
